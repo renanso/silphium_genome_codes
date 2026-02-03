@@ -1,0 +1,6 @@
+Genome,Genome_size,Original_gene_number,Gene_number,Annotated genes,Histone,Fatty_acid,Ethylene,Cytokinin,Auxin,Squalene,Self_incompatibility,LRR
+H.annuus_ha412,3196446916,44144,45087,35892,224,55,54,12,195,15,21,140
+H.annuus_XRQ,2924961710,52232,49286,38105,226,51,52,12,203,15,27,154
+S.integrifolium,7641408655,44653,44653,34873,217,43,51,16,175,20,13,83
+S.perfoliatum,7507277660,43390,43390,34214,236,41,51,15,137,22,12,82
+S.taccada,1158564820,25328,18435,18412,88,26,29,7,79,20,6,72
