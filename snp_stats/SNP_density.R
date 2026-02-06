@@ -1,0 +1,14 @@
+library("CMplot")
+
+snp_data<-read.table("snp_data_449K.txt", header = T)
+
+CMplot(snp_data, type="h",plot.type="d",LOG10=F, highlight=SNPs, highlight.type="p", ylab="LOD scores",
+       threshold = 3.7, threshold.col="black", threshold.lwd=1, main = "",
+       highlight.col=NULL,highlight.cex=1.2,highlight.pch=19,file="jpg",
+       dpi=300,file.output=TRUE,verbose=TRUE,width=10,height=4,band=1)
+snp_data[1:2,]
+
+#CMplot(snp_data, type="h",plot.type="m",LOG10=F, highlight=SNPs, highlight.type="p", ylab="LOD scores",
+ #      threshold = 3.7, threshold.col="black", threshold.lwd=1, main = "Seed size QTL",
+  #     highlight.col=NULL,highlight.cex=1.2,highlight.pch=19,file="jpg",memo="",
+   #    dpi=300,file.output=TRUE,verbose=TRUE,width=10,height=4,band=1)
