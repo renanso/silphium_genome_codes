@@ -2,24 +2,32 @@
 rm(list=ls())
 data<- read.csv("coordinates3.csv", header = T)
 
-###map
-
-#install.packages(c("cowplot", "googleway", "ggplot2", "ggrepel", 
-#                   "ggspatial", "libwgeom", "sf", "rnaturalearth", "rnaturalearthdata"))
-
 library("ggplot2")
 library("ggrepel")
 library("sf")
 library("rnaturalearth")
 library("rnaturalearthdata")
+library("maps")
+library("tools")
+###USDA hardiness zones
+library("tidyverse")
+library("USAboundaries") # install v0.3.0 to work
+library("conflicted")  
+conflict_prefer("filter", "dplyr")
+conflict_prefer("lag", "dplyr")
+##climate data layers
+library("geodata")
+library("terra")
+library("raster") ##rasterize vapr data
+library("ggspatial")
+library("raster")
+library("data.table")
 
 theme_set(theme_bw())
-
 world <- ne_countries(scale = "medium", returnclass = "sf")
 class(world)
       
 ###rivers layer
-
 rivers50 <- ne_download(scale = 50, type = 'rivers_lake_centerlines', category = 'physical') #Rivers data 
 rivers_cropped <- st_crop(st_as_sf(rivers50), xmin = -95, xmax = -87,
                           ymin = 25, ymax = 48)
@@ -32,17 +40,13 @@ ggplot(data = world) +
   geom_sf(data = rivers_cropped, col = 'blue') +
   coord_sf(xlim = c(-110, -70), ylim = c(20, 55), expand = FALSE)
   
-
-library("maps")
 states <- st_as_sf(map("state", plot = FALSE, fill = TRUE))
 head(states)
 
 #states <- cbind(states, st_coordinates(st_centroid(states)))
 
-library("tools")
 states$ID <- toTitleCase(states$ID)
 head(states)
-
 
 ggplot(data = world) +
   geom_sf(data = states) +
@@ -52,22 +56,8 @@ ggplot(data = world) +
   geom_sf(data = rivers_cropped, col = 'blue') +
   coord_sf(xlim = c(-110, -70), ylim = c(20, 55), expand = FALSE)
 
-###USDA hardiness zones
-
-library(sf)
-library(tidyverse)
-library(USAboundaries) # install v0.3.0 to work
-
-library(conflicted)  
-
-library(tidyverse)
-conflict_prefer("filter", "dplyr")
-conflict_prefer("lag", "dplyr")
-
 #install.packages("USAboundariesData", repos = "https://ropensci.r-universe.dev", type = "source")
-
 # Download and unzip file
-
 #temp_shapefile <- tempfile()
 #download.file('https://prism.oregonstate.edu/projects/public/phm/2012/phm_us_shp_2012.zip', temp_shapefile)
 #unzip(temp_shapefile)
@@ -96,23 +86,7 @@ geom_point(data = data, aes(x = long, y = lat), size = 1.5,
 
 #####climate data layers
 
-library(geodata)
-library(terra)
-
-#windows path
-#data_bio <- worldclim_country("USA", var="bio",res=10,version="2.1", path="G:/My Drive/field_trials_24/final_files/data_for_gwas/worldclim")
-data_tavg <- worldclim_country("USA", var="tavg",res=10,version="2.1", path="/My Drive/projects/007_silphium50K/genome_scans/worldclim")
-data_tmin <- worldclim_country("USA", var="tmin",res=10,version="2.1", path="/My Drive/projects/007_silphium50K/genome_scans/worldclim")
-data_tmax <- worldclim_country("USA", var="tmax",res=10,version="2.1", path="/My Drive/projects/007_silphium50K/genome_scans/worldclim")
-data_prec <- worldclim_country("USA", var="prec",res=10,version="2.1", path="/My Drive/projects/007_silphium50K/genome_scans/worldclim")
-data_srad <- worldclim_country("USA", var="srad",res=10,version="2.1", path="/My Drive/projects/007_silphium50K/genome_scans/worldclim")
-data_elev <- worldclim_country("USA", var="elev",res=10,version="2.1", path="/My Drive/projects/007_silphium50K/genome_scans/worldclim")
-library(raster)
-vapr.files <- list.files("/My Drive/projects/007_silphium50K/genome_scans/worldclim/climate/wc2.1_30s_vapr", ".tif", full.names=TRUE)
-vapr <- stack(vapr.files)
-data_vapr <-rast(vapr)
-
-## mac path
+## Change the paths to where you saved the worldclim data
 #data_bio <- worldclim_country("USA", var="bio",res=10,version="2.1", path="G:/My Drive/field_trials_24/final_files/data_for_gwas/worldclim")
 data_tavg <- worldclim_country("USA", var="tavg",res=10,version="2.1", path="~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
 data_tmin <- worldclim_country("USA", var="tmin",res=10,version="2.1", path="~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
@@ -121,7 +95,6 @@ data_prec <- worldclim_country("USA", var="prec",res=10,version="2.1", path="~/L
 data_srad <- worldclim_country("USA", var="srad",res=10,version="2.1", path="~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
 data_elev <- worldclim_country("USA", var="elev",res=10,version="2.1", path="~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
 
-library(raster)
 vapr.files <- list.files("~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim/climate/wc2.1_30s_vapr", ".tif", full.names=TRUE)
 vapr <- stack(vapr.files)
 data_vapr <-rast(vapr)
@@ -141,16 +114,14 @@ write.csv(final_data, "climate_variable.csv")
 
 #Heat Index calculation
 #Thornthwaite 1948 on mean temperature for months 6,7,8
-
 final_data<- read.csv("climate_variable.csv")
 final_data$hit_og<-((final_data[,11]^1.514)/5)+((final_data[,12]^1.514)/5)+((final_data[,13]^1.514)/5)
 
 #Thornthwaite 1948 on highest temperature for months 6,7,8
 final_data$hit_hi<-((final_data[,37]^1.514)/5)+((final_data[,38]^1.514)/5)+((final_data[,39]^1.514)/5)
 
-
 ## Aridity index (ai) (Global-AI geodataset have been multiplied by a factor of 10,000)
-
+##change the path to your Global-AI geodataset
 ai.files <- list.files("/Users/renansouza/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim/climate/Global-AI_v3_monthly", ".tif", full.names=TRUE)
 ai <- stack(ai.files)
 data_ai <-rast(ai)
@@ -164,12 +135,6 @@ write.csv(final_data2, "final_gea2.csv")
 
 #read.csv("final_gea_index2.csv")
 ###plot aridity index
-
-library(dplyr)
-library(ggspatial)
-library(raster)
-library(data.table)
-library(sf)
 
 #map <- stack("/My Drive/projects/007_silphium50K/genome_scans/gea/Global-AI_ET0_v3_annual/ai_v3_yr.tif")
 map <- stack("/Users/renansouza/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/gea/Global-AI_ET0_v3_annual/ai_v3_yr.tif")
@@ -196,8 +161,6 @@ head(tmax_Jan_09_df2)
 png(filename="plot_ai_v3.png", width = 600, height = 750, units = "px")
 
 ### focus on midwest
-
-library(maps)
 
 g_tmax_map <- ggplot(data = tmax_Jan_09_df2) +
     geom_raster(aes(x = x, y = y, fill = `ai2`)) +
@@ -250,8 +213,6 @@ plot_data2<-data.frame(plot_data$x,plot_data$y, plot_data$hit_og, plot_data$hit_
 ##Heat index mean
 png(filename="plot_him_v3.png", width = 600, height = 750, units = "px")
 
-library(maps)
-
 g_tmax_map <- ggplot(data = plot_data2) +
   geom_raster(aes(x = plot_data.x, y = plot_data.y, fill = `plot_data.hit_og`)) +
   #scale_fill_manual(values = mycolors) +
@@ -275,12 +236,9 @@ g_tmax_map +
 
 dev.off()
 
-
 ##Heat index high
 
 png(filename="plot_hih_v3.png", width = 650, height = 750, units = "px")
-
-library(maps)
 
 g_tmax_map <- ggplot(data = plot_data2) +
   geom_raster(aes(x = plot_data.x, y = plot_data.y, fill = `plot_data.hit_hi`)) +
