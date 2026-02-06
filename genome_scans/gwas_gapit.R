@@ -3,11 +3,10 @@ rm(list = ls())
 #options(download.file.method="libcurl", url.method="libcurl")
 #source("http://www.zzlab.net/GAPIT/GAPIT.library.R")
 #source("http://www.zzlab.net/GAPIT/gapit_functions.txt")
-library(GAPIT)
-library(BiocParallel)
+library("data.table") ###fast reading dataframe
+library("GAPIT")
+library("BiocParallel")
 bplapply(1:10, print, BPPARAM = MulticoreParam (workers = 8))
-###fast reading dataframe
-library(data.table)
 
 ## genotyping information
 myG<-fread(file="011_silphium_smiss1_miss03_maf01_449K_258n_updated_2n_std.Ihapmap",  sep = "\t") # reading only the first column of the file

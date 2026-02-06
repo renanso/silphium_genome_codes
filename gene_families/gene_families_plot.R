@@ -1,6 +1,8 @@
+
+library("tidyverse")
+library("ggplot2")
+
 df<- read.csv("all_genes.csv")
-library(tidyverse)
-library(ggplot2)
 
 # Select and reshape data
 gene_families <- c("Histone", "Fatty_acid", "Ethylene", "Cytokinin", 

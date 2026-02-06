@@ -1,5 +1,9 @@
 rm(list = ls())
 
+library("ggtree")
+library("ggplot2")
+library("dendextend")
+
 theKin <- read.table("kinship_centered_ibs.txt", header =F, row.names = 1)
 
 clones<-row.names(theKin)
@@ -10,11 +14,6 @@ distance.matrix <- dist(theKin, upper = TRUE)
 hc <- hclust(distance.matrix) #, method = kinship.cluster)
 #hc <- ape::as.phylo(hc)
 plot(hc, type = "fan")
-
-#BiocManager::install("ggtree")
-library(ggtree)
-library(ggplot2)
-library(dendextend)
 
 ggtree(hc, layout='circular')
 info<- read.csv("info_nj_groups.csv", header =T)
@@ -60,48 +59,3 @@ p3<-groupOTU(p_iris, group, 'group') + aes(color=group) +
 p3
 
 dev.off()
-
-
-#### other dendro
-library(factoextra)
-
-hc <- hclust(distance.matrix) 
-fviz_dend(hc, cex = 0.5)
-
-
-fviz_dend(hc, k = 3,                 # Cut in four groups
-          cex = 0.5,                 # label size
-          k_colors = c("#E7B800", "#FC4E07", "#0080FE"),
-          color_labels_by_k = TRUE,  # color labels by groups
-          ggtheme = theme_gray(), # Change theme
-          type = "circular",
-          show_labels = TRUE
-)
-
-
-
-
-##example
-
-
-# a random tree
-tree <- rtree(10)
-
-# show tip label of tree
-tree$tip.label
-
-# group tip label
-grp <- list(UG = tree$tip.label[1:5],
-            UQ = tree$tip.label[6:10])
-
-# or in this way
-# grp <- list(UG = c("t7", "t6", "t4", "t1", "t3"),
-#             UQ = c("t9",  "t2",  "t5",  "t8",  "t10"))
-
-
-# plot tree
-tree_plot <- ggtree(tree, layout = 'circular', branch.length='none')
-
-# group color
-groupOTU(tree_plot, grp, 'Species') + aes(color=Species) +
-  theme(legend.position="right")

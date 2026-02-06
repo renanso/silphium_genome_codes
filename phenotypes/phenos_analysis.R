@@ -1,6 +1,4 @@
-#####################################
-###############Initial QC############
-#####################################
+library("lme4")
 rm(list = ls());ls ()
 data <- read.csv("phenotypic_data.csv", stringsAsFactors=FALSE, fileEncoding="latin1")
 head(data)
@@ -79,7 +77,6 @@ write.csv(summary_all, file = "all_traits_summary.csv")
 ###########################
 ###Linear models and BLUES
 ###########################
-library(lme4)
 
 ######All environments analysis (combined)
 fm_test1.1<-lmer(max_ray_floret_count~ clone + (1|env/rep) + (1|rep/block) + (1|ge), data=data)

@@ -1,6 +1,5 @@
 ##run on R 4.4.2
 rm(list=ls())
-data<- read.csv("coordinates3.csv", header = T)
 
 library("ggplot2")
 library("ggrepel")
@@ -22,6 +21,11 @@ library("raster") ##rasterize vapr data
 library("ggspatial")
 library("raster")
 library("data.table")
+
+##data input
+data<- read.csv("coordinates3.csv", header = T)
+
+
 
 theme_set(theme_bw())
 world <- ne_countries(scale = "medium", returnclass = "sf")

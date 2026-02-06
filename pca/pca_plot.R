@@ -1,12 +1,12 @@
 ############################
 #PCA PLOT
 ############################
-##3D with colors
+library("ggplot2")
+library("plotly")
+library("scales")
+
 dat<-read.csv("pca_data.csv", header =T)
 
-library(ggplot2)
-library(plotly)
-library(scales)
 plot_ly(x=dat$PC1, y=dat$PC2, z=dat$PC3, type="scatter3d", mode="markers", color=dat$K3_ext_species)
 
 p1<-ggplot(dat,aes(x=PC1,y=PC2,color=K3_ext_species, label = row.names(dat))) +
