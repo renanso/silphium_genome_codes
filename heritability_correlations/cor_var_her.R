@@ -320,22 +320,76 @@ fit9
 ####Important QTL variances and effects
 ###single QTL model
 #############################
+###Variance Components: treating the QTL as a random effect
 
 m1<-lmer(SNC~ 1 + (1|Chr01_695173749), data=data)
-m2<-lmer(RFC~ 1 + (1|Chr01_695173749), data=data)
+#m2<-lmer(RFC~ 1 + (1|Chr01_695173749), data=data)
 #m3<-lmer(HI~ 1 + (1|Chr01_347199779), data=data)
 #m4<-lmer(AI~ 1 + (1|Chr02_892024560), data=data)
-m5<-lmer(RFC~ 1 + (1|Chr04_222292225), data=data)
+#m5<-lmer(RFC~ 1 + (1|Chr04_222292225), data=data)
 #m6<-lmer(HI~ 1 + (1|Chr03_78530134), data=data)
 #m8<-lmer(AI~ 1 + (1|Chr06_274305900), data=data)
-m9<-lmer(RD~ 1 + (1|Chr01_1583902655), data=data)
-m10<-lmer(RFC~ 1 + (1|Chr01_1583902655), data=data)
-m11<-lmer(SNC~ 1 + (1|Chr01_1583902655), data=data)
-
+#m9<-lmer(RD~ 1 + (1|Chr01_1583902655), data=data)
+#m10<-lmer(RFC~ 1 + (1|Chr01_1583902655), data=data)
+#m11<-lmer(SNC~ 1 + (1|Chr01_1583902655), data=data)
 
 vc <- as.data.frame(VarCorr(m1))
 total_var <- sum(vc$vcov, na.rm = TRUE)
 vc$pct_variance <- round(100 * vc$vcov / total_var, 4)
-vc
+vc ##the variance for the markers is too high with these models.
+
+#effects
+ranef(m1)
+coef(m1)
+summary(m1)
+coef(summary(m1)) #intercept
+
+##A more precise way to determine the QTL effect is obtaining the R2 from the
+## regression with the different allele combinations.
+m1b<-lm(SNC~ Chr01_695173749, data=data)
+r_squared_value <- summary(m1b)$adj.r.squared
+r_squared_value
+
+###################
+##The R2 can also be calculated by the ratio of ss_pred / total_ss
+##variance calculation with the 08_run_lmm_merged_traits.R script
+##this calculation was based on the SS from ANOVA.######
+
+m1.1<-lm(SNC~ as.factor(Chr01_695173749), data=data)
+s <- summary(m1.1)
+an <- anova(m1.1)
+coef_df <- as.data.frame(coef(s))
+coef_df$term <- rownames(coef_df)
+rownames(coef_df) <- NULL
+
+# Calculate variance explained from ANOVA (sum of squares)
+an_df <- as.data.frame(an)
+an_df$term <- rownames(an_df)
+rownames(an_df) <- NULL
+
+# find the predictor row (contains 'geno')
+pred_row <- grep("Chr01_695173749", an_df$term, ignore.case = TRUE)
+resid_row <- grep("Residuals", an_df$term, ignore.case = TRUE)
+length(pred_row) 
+length(resid_row)
+
+ss_pred <- an_df[pred_row, "Sum Sq"]
+ss_resid <- an_df[resid_row, "Sum Sq"]
+total_ss <- ss_pred + ss_resid
+
+pct <- round(100 * ss_pred / total_ss, 6)
+
+variance_df <- data.frame(term = an_df$term[c(pred_row, resid_row)],
+                          df = an_df$Df[c(pred_row, resid_row)],
+                          sumsq = an_df$`Sum Sq`[c(pred_row, resid_row)],
+                          pct_variance = c(pct, round(100 * ss_resid / total_ss, 6)))
+ 
+#### effect calculation
+###Mean value of the genotype
+
+eff_stats <- aggregate(SNC ~ Chr01_695173749, data = data, FUN = function(x) c(n = length(x), mean = mean(x), sd = sd(x)))
+eff_df <- do.call(data.frame, eff_stats)
+colnames(eff_df) <- c("geno", "n", "mean", "sd")
+eff_df$se <- with(eff_df, ifelse(n > 0, sd / sqrt(n), NA)) 
 
 
