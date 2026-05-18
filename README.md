@@ -1,6 +1,6 @@
 # silphium_genome
 
-Scripts used for the several analysis presented in the Silphium genome manuscript: <i>"Haplotype-phased genomes elucidate genetic architecture of environmental adaptation and domestication traits in Silphium."</i>
+Scripts used for the several analysis presented in the Silphium genome manuscript: <i>"Assembly of Silphium interspecific hybrid genomes opens the genus to phylogenomics, ecogenomics, and molecular breeding."</i>
 
 <!-- GETTING STARTED -->
 ## Getting Started
