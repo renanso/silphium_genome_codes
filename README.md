@@ -1,6 +1,6 @@
 # Silphium Genome Analysis
 
-Scripts and workflows for comprehensive genomic analysis of Silphium presented in the manuscript: <i>"Assembly of Silphium interspecific hybrid genomes opens the genus to phylogenomics, ecogenomics, and molecular breeding."</i>
+Scripts for analysis presented in the manuscript: <i>"Assembly of Silphium interspecific hybrid genomes opens the genus to phylogenomics, ecogenomics, and molecular breeding."</i>
 
 ## Overview
 
@@ -21,7 +21,7 @@ All code for data analysis and figure generation is organized in the folders des
 
 ---
 
-## Directory Structure and Workflows
+## Directory Structure
 
 ### `gea_data/` — Geographic and Climate Data Visualization
 **Purpose**: Visualize sample collection locations and environmental context
