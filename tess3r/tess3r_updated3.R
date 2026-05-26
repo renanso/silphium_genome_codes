@@ -1,59 +1,93 @@
-rm(list=ls())
+################################################################################
+# Population Structure Analysis using TESS3R
+################################################################################
+# Purpose: Perform spatially-informed ancestry estimation (TESS3) to identify
+#          population substructure and admixture patterns; combines genetic and
+#          geographic information to assign samples to ancestral populations
+# Input: Numeric genotype data (HapMap format), geographic coordinates
+# Output: Q-matrix (ancestry proportions), cross-validation plots, structure plots
+# Reference: TESS3R package for large-scale population genomics
+#            Caye et al. (2016) PNAS 113(48):13603-13608
+################################################################################
 
-library("Rcpp")
-library("tess3r")
-library("maps")
-library("BiocParallel")
-library("data.table")
-library("ggplot2")
-library("ggrepel")
+# Clear workspace
+rm(list = ls())
 
-bplapply(1:10, print, BPPARAM = MulticoreParam (workers = 8))
+# ============================================================================
+# LOAD REQUIRED LIBRARIES
+# ============================================================================
+library("Rcpp")            # C++ code integration for performance
+library("tess3r")          # Spatially-informed ancestry estimation
+library("maps")            # Map drawing utilities
+library("BiocParallel")    # Parallel computation
+library("data.table")      # Fast data frame operations
+library("ggplot2")         # Grammar of graphics for visualization
+library("ggrepel")         # Better label placement in plots
 
-## genotyping information
-##replace the test.txt file for the numeric hapmap
-data2<-fread(file="test.txt",  sep = "\t")
-colnames(data2)[1]<- "clone"
+# Test parallel processing with 8 cores
+bplapply(1:10, print, BPPARAM = MulticoreParam(workers = 8))
 
-#data2<- read.table("RSouza_silphium.Ihapmap.150gps.numeric2.hmp.txt", header = T)
-#colnames(data2)[1]<- "clone"
+# ============================================================================
+# SECTION 1: LOAD AND PREPARE GENOTYPE DATA
+# ============================================================================
+# Load numeric genotype data (0/1/2 coding for diploid calls)
+# File format: rows are SNPs, columns are samples
+# Expected format: first column = SNP identifier
+data2 <- fread(file = "test.txt", sep = "\t")
+colnames(data2)[1] <- "clone"
 
-#coord2<-read.table("coordinates2.txt", header = T)
-coord2<-read.table("coordinates_integrifolium.txt", header = T)
+# Alternative: Load data from HapMap format if different file available
+# data2 <- read.table("RSouza_silphium.Ihapmap.150gps.numeric2.hmp.txt", header = T)
+# colnames(data2)[1] <- "clone"
 
-#merge to match genotypes with coordinates
-n1<-ncol(data2) + 1
-n2<- ncol(data2) + 2
+# ============================================================================
+# SECTION 2: LOAD GEOGRAPHIC COORDINATES
+# ============================================================================
+# Load latitude/longitude coordinates for each sample
+# Format: sample ID, latitude, longitude columns
+coord2 <- read.table("coordinates_integrifolium.txt", header = T)
 
-coord3<- (merge(data2, coord2, by = 'clone'))[,n2:n1]
-coord3<-as.matrix(coord3)
+# Alternative coordinate file (commented):
+# coord2 <- read.table("coordinates2.txt", header = T)
 
-write.table(coord3, file = "coordinates_matrix.txt", sep = "\t", row.names = F, col.names = T)
-data3<- (merge(data2, coord2, by = 'clone'))[,1:ncol(data2)]
+# ============================================================================
+# SECTION 3: MERGE GENOTYPES WITH COORDINATES
+# ============================================================================
+# Combine genotype and coordinate data, matching by clone ID
+n1 <- ncol(data2) + 1
+n2 <- ncol(data2) + 2
 
-##plot samples
-png(filename="plot.png", width = 10000, height = 10000, res=300, units = "px")
-#labels <- coord2$clone   # or df$SampleName, for example
-#plot(coord2[,c(3,2)], pch = 19, cex = .5, 
-#     xlab = "Longitude (°E)", ylab = "Latitude (°N)")
-#map('state', add = T, interior =T)
-# Add non-overlapping labels
-#pointLabel(coord2[,3], coord2[,2], labels = labels, cex = 0.7)
-#text(coord2[,3], coord2[,2], labels = labels,
-#     pos = 4,     # position relative to the point: 1=below, 2=left, 3=above, 4=right
-#     cex = 0.7,   # text size scaling
-#     col = "blue")
+# Extract coordinates only for samples with genotypes
+coord3 <- (merge(data2, coord2, by = 'clone'))[, n2:n1]
+coord3 <- as.matrix(coord3)
 
-# Convert coordinates to a data frame
+# Save coordinate matrix for downstream use
+write.table(coord3, file = "coordinates_matrix.txt", sep = "\t", 
+            row.names = FALSE, col.names = TRUE)
+
+# Extract genotype data matched with coordinates
+data3 <- (merge(data2, coord2, by = 'clone'))[, 1:ncol(data2)]
+
+# ============================================================================
+# SECTION 4: VISUALIZE SAMPLE COLLECTION LOCATIONS
+# ============================================================================
+# Generate map showing geographic distribution of samples
+png(filename = "plot.png", width = 10000, height = 10000, res = 300, units = "px")
+
+# Convert coordinates to data frame for ggplot
 df <- as.data.frame(coord3)
 df$label <- labels
 
+# Create map with sample locations and labels
 ggplot(coord2, aes(x = long, y = lat)) +
   geom_point(size = 1.5) +
+  # Add state boundaries as context
   borders("state") +
+  # Add repelling labels to avoid overlaps
   geom_text_repel(aes(label = clone), size = 3, color = "blue",
                   max.overlaps = Inf) +
   labs(x = "Longitude (°E)", y = "Latitude (°N)") +
+  # Limit map extent to study region
   coord_quickmap(
     xlim = c(-100, -85),
     ylim = c(30, 45),
@@ -62,41 +96,76 @@ ggplot(coord2, aes(x = long, y = lat)) +
   theme_minimal(base_size = 14)
 dev.off()
 
-##preparing genotyping dataset for tess3r
-rownames(data3)<- data3$clone
-data3$clone<-NULL
+# ============================================================================
+# SECTION 5: PREPARE DATA FOR TESS3R ANALYSIS
+# ============================================================================
+# Set row names to sample IDs for downstream analysis
+rownames(data3) <- data3$clone
+# Remove redundant clone column
+data3$clone <- NULL
 
-tess3.obj <- tess3(X = data3, coord = coord3, K = 1:8, 
-                   method = "projected.ls", ploidy = 2, openMP.core.num = 8) 
+# ============================================================================
+# SECTION 6: RUN TESS3 ANALYSIS
+# ============================================================================
+# Perform TESS3 with K ranging from 1 to 8 ancestral populations
+# This explores different levels of population structure
+# Parameters:
+#   X: Genotype matrix (rows = samples, columns = SNPs)
+#   coord: Geographic coordinates for spatial priors
+#   K: Number of ancestral populations to test (1:8)
+#   method: "projected.ls" = Least squares with spatial constraints
+#   ploidy: 2 = diploid organism
+#   openMP.core.num: Number of cores for parallel processing
+tess3.obj <- tess3(X = data3, coord = coord3, K = 1:8,
+                   method = "projected.ls", ploidy = 2, openMP.core.num = 8)
 
-# Save an object to a file
+# Save TESS3 object for future reference
 saveRDS(tess3.obj, file = "tess3.rds")
-# Restore the object
-#readRDS(file = "tess3.rds")
 
-png(filename="plot1.png", width = 480, height = 480, units = "px")
+# ============================================================================
+# SECTION 7: MODEL SELECTION - CROSS-VALIDATION
+# ============================================================================
+# Plot cross-validation scores to select optimal K
+# Lower score = better fit of the model
+png(filename = "plot1.png", width = 480, height = 480, units = "px")
 plot(tess3.obj, pch = 19, col = "blue",
      xlab = "Number of ancestral populations",
      ylab = "Cross-validation score")
 dev.off()
 
+# ============================================================================
+# SECTION 8: EXTRACT Q-MATRICES FOR SELECTED K VALUES
+# ============================================================================
+# Q-matrix: ancestry proportions for each individual in each population
+# Rows = samples, Columns = K populations, Values = proportion of ancestry
 
-# retrieve tess3 Q matrix for clusters 
-q.matrix2 <- qmatrix(tess3.obj, K =  2)
-q.matrix3 <- qmatrix(tess3.obj, K =  3)
-q.matrix4 <- qmatrix(tess3.obj, K =  4)
-q.matrix5 <- qmatrix(tess3.obj, K =  5)
+# Extract Q-matrices for K = 2, 3, 4, 5
+# These represent different hypotheses about population number
+q.matrix2 <- qmatrix(tess3.obj, K = 2)
+q.matrix3 <- qmatrix(tess3.obj, K = 3)
+q.matrix4 <- qmatrix(tess3.obj, K = 4)
+q.matrix5 <- qmatrix(tess3.obj, K = 5)
 
+# Save Q-matrices for downstream visualization
 saveRDS(q.matrix2, file = "q.matrix2.rds")
 saveRDS(q.matrix3, file = "q.matrix3.rds")
 saveRDS(q.matrix4, file = "q.matrix4.rds")
 saveRDS(q.matrix5, file = "q.matrix5.rds")
 
-# STRUCTURE-like barplot for the Q-matrix 
-##CHANGE THE PALETTE
+# ============================================================================
+# SECTION 9: DEFINE COLOR PALETTE FOR Q-PLOTS
+# ============================================================================
+# Create color palette for STRUCTURE-like bar plots
+# One color per ancestral population
+my.colors <- c("tomato", "orange", "lightblue", "wheat", "olivedrab")
 
-my.colors <- c("tomato", "orange", "lightblue", "wheat","olivedrab")
+# Create palette with specified colors
 my.palette <- CreatePalette(my.colors, 5)
+
+# Note: Use bar.plot() function from tess3r to create STRUCTURE-like plots
+# Example:
+# bar.plot(q.matrix2, coord2, colorPalette = my.palette,
+#          map.polygon = TRUE, cex = 0.4)
 
 #library(RColorBrewer)
 #my.colors <- brewer.pal(n = 5, name = "Dark2")

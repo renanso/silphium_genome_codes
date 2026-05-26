@@ -1,101 +1,171 @@
-gc()
-rm(list = ls());ls ()
+################################################################################
+# Phenotypic Correlations and Heritability Analysis
+################################################################################
+# Purpose: Calculate phenotypic correlations, test significance, and create
+#          correlation plots for multiple traits across different environments
+# Input: final_phenos2.csv - Phenotypic data with factors and traits
+# Output: Correlation matrices, p-value matrices, and visualization plots
+# Traits analyzed: RFC (Ray Floret Count), SM (Seed Mass), SNC (Seed Number 
+#                  per Capitulum), RD (Receptacle Diameter)
+################################################################################
 
-library("Hmisc")
-library("missMDA") # impute NAs
-library("corrplot") # plot correlations
-library("VCA") # variance component significance
-#loading the phenotypes file
-data <- read.csv("final_phenos2.csv", stringsAsFactors=FALSE, fileEncoding="latin1", na.strings = NA)
+# Clear workspace
+gc()
+rm(list = ls())
+
+# ============================================================================
+# LOAD REQUIRED LIBRARIES
+# ============================================================================
+library("Hmisc")           # Statistical tools including correlation functions
+library("missMDA")         # Imputation for missing multivariate data
+library("corrplot")        # Visualization of correlation matrices
+library("VCA")             # Variance component analysis
+
+# ============================================================================
+# SECTION 1: DATA INPUT AND STRUCTURE INSPECTION
+# ============================================================================
+# Load phenotypic data with proper encoding for special characters
+# Includes factors (clone, environment, rep, block) and quantitative traits
+data <- read.csv("final_phenos2.csv", stringsAsFactors = FALSE, 
+                 fileEncoding = "latin1", na.strings = NA)
+
+# Examine data structure
 head(data)
 tail(data)
 str(data)
 
-# adjusting the factors and variables
-data[,1:21] <- lapply(data[,1:21], factor)
-data[,22:27] <- lapply(data[,22:27], as.numeric)
+# ============================================================================
+# SECTION 2: DATA TYPE CONVERSION
+# ============================================================================
+# Columns 1-21: Categorical factors (clone, environment, replication, block, etc.)
+# Convert to factors for proper analysis
+data[, 1:21] <- lapply(data[, 1:21], factor)
+
+# Columns 22-27: Quantitative traits (RFC, SM, SNC, RD, AI, HI)
+# Convert to numeric for statistical analysis
+data[, 22:27] <- lapply(data[, 22:27], as.numeric)
+
+# Verify conversions
 str(data)
 summary(data)
+
+# Attach data frame for direct column access
 attach(data)
 
-# data visualization
-par(mar=c(1,1,1,1))
-par(mfrow=c(2,3))
-for (i in 1:length(data[,22:27])) {
-  boxplot(data[,22:27][,i], main=names(data[,22:27][i]), type="l")}
+# ============================================================================
+# SECTION 3: EXPLORATORY DATA VISUALIZATION
+# ============================================================================
+# Boxplots for trait distributions by environment
+par(mar = c(1, 1, 1, 1))
+par(mfrow = c(2, 3))
+for (i in 1:length(data[, 22:27])) {
+  boxplot(data[, 22:27][, i], main = names(data[, 22:27][i]), type = "l")
+}
 dev.off()
 
-#quantitative
-par(mar=c(1,1,1,1))
-par(mfrow=c(2,3))
-for (i in 1:length(data[,22:27])) {
-  hist(data[,22:27][,i], main=names(data[,22:27][i]))}
+# Histograms for trait distributions
+par(mar = c(1, 1, 1, 1))
+par(mfrow = c(2, 3))
+for (i in 1:length(data[, 22:27])) {
+  hist(data[, 22:27][, i], main = names(data[, 22:27][i]))
+}
 dev.off()
 
-#data subset
+# ============================================================================
+# SECTION 4: DATA SUBSETTING BY ENVIRONMENT
+# ============================================================================
+# Create separate datasets for each environment (location x year combination)
+# Select relevant columns: factors + key quantitative traits
+data0a <- data[data$env == "al24", c(1:23, 26, 27)]  # Alabama 2024
+data0b <- data[data$env == "ks24", c(1:23, 26, 27)]  # Kansas 2024
+data0c <- data[data$env == "al25", 1:ncol(data)]     # Alabama 2025
+data0d <- data[data$env == "ks25", 1:ncol(data)]     # Kansas 2025
 
-data0a<- data[data$env=="al24",c(1:23,26,27)]
-data0b<- data[data$env=="ks24",c(1:23,26,27)]
-data0c<- data[data$env=="al25",1:ncol(data)]
-data0d<- data[data$env=="ks25",1:ncol(data)]
+# ============================================================================
+# SECTION 5: CALCULATE PHENOTYPIC CORRELATIONS BY ENVIRONMENT
+# ============================================================================
+# Use Pearson correlation on quantitative traits
+# rcorr() returns both correlation coefficients and p-values
 
-###correlations
-
-##ALL ENV
-correlations_al24<- rcorr(as.matrix(data0a[,c(22:25)]), type= "pearson")
-write.csv(round(correlations_al24$r,2), file = "phenotypic_correlations_al24.csv")
+# Alabama 2024: 4 traits (columns 22:25)
+correlations_al24 <- rcorr(as.matrix(data0a[, c(22:25)]), type = "pearson")
+write.csv(round(correlations_al24$r, 2), file = "phenotypic_correlations_al24.csv")
 write.csv(correlations_al24$P, file = "phenotypic_corr_significance_al24.csv")
 
-correlations_ks24<- rcorr(as.matrix(data0b[,c(22:25)]), type= "pearson")
-write.csv(round(correlations_ks24$r,2), file = "phenotypic_correlations_ks24.csv")
+# Kansas 2024: 4 traits
+correlations_ks24 <- rcorr(as.matrix(data0b[, c(22:25)]), type = "pearson")
+write.csv(round(correlations_ks24$r, 2), file = "phenotypic_correlations_ks24.csv")
 write.csv(correlations_ks24$P, file = "phenotypic_corr_significance_ks24.csv")
 
-correlations_al25<- rcorr(as.matrix(data0c[,c(22:27)]), type= "pearson")
-write.csv(round(correlations_al25$r,2), file = "phenotypic_correlations_al25.csv")
+# Alabama 2025: 6 traits (columns 22:27)
+correlations_al25 <- rcorr(as.matrix(data0c[, c(22:27)]), type = "pearson")
+write.csv(round(correlations_al25$r, 2), file = "phenotypic_correlations_al25.csv")
 write.csv(correlations_al25$P, file = "phenotypic_corr_significance_al25.csv")
 
-correlations_ks25<- rcorr(as.matrix(data0d[,c(22:27)]), type= "pearson")
-write.csv(round(correlations_ks25$r,2), file = "phenotypic_correlations_ks25.csv")
+# Kansas 2025: 6 traits
+correlations_ks25 <- rcorr(as.matrix(data0d[, c(22:27)]), type = "pearson")
+write.csv(round(correlations_ks25$r, 2), file = "phenotypic_correlations_ks25.csv")
 write.csv(correlations_ks25$P, file = "phenotypic_corr_significance_ks25.csv")
 
-##plots
+# ============================================================================
+# SECTION 6: PRINCIPAL COMPONENT IMPUTATION FOR MISSING VALUES
+# ============================================================================
+# Use PCA-based imputation to handle missing data while preserving structure
+# Impute using 2 principal components
+res.comp1 <- imputePCA(data0a[, c(22:25)], ncp = 2)
+res.comp2 <- imputePCA(data0b[, c(22:25)], ncp = 2)
+res.comp3 <- imputePCA(data0c[, c(22:27)], ncp = 2)
+res.comp4 <- imputePCA(data0d[, c(22:27)], ncp = 2)
 
-res.comp1 <- imputePCA(data0a[,c(22:25)],ncp=2)
-res.comp2 <- imputePCA(data0b[,c(22:25)],ncp=2)
-res.comp3 <- imputePCA(data0c[,c(22:27)],ncp=2)
-res.comp4 <- imputePCA(data0d[,c(22:27)],ncp=2)
+# Extract complete imputed datasets
+cast_data1 <- data.frame(res.comp1$completeObs)
+cast_data2 <- data.frame(res.comp2$completeObs)
+cast_data3 <- data.frame(res.comp3$completeObs)
+cast_data4 <- data.frame(res.comp4$completeObs)
 
-cast_data1<- data.frame(res.comp1$completeObs)
-cast_data2<- data.frame(res.comp2$completeObs)
-cast_data3<- data.frame(res.comp3$completeObs)
-cast_data4<- data.frame(res.comp4$completeObs)
+# ============================================================================
+# SECTION 7: CALCULATE CORRELATIONS FROM IMPUTED DATA
+# ============================================================================
+# Calculate correlation matrices for visualization
+M1 <- cor(cast_data1)  # Alabama 2024
+M2 <- cor(cast_data2)  # Kansas 2024
+M3 <- cor(cast_data3)  # Alabama 2025
+M4 <- cor(cast_data4)  # Kansas 2025
 
-M1<-cor(cast_data1)
-M2<-cor(cast_data2)
-M3<-cor(cast_data3)
-M4<-cor(cast_data4)
-
-##add significance
-# mat : is a matrix of data
-# ... : further arguments to pass to the native R cor.test function
+# ============================================================================
+# SECTION 8: CALCULATE SIGNIFICANCE MATRIX FOR CORRELATIONS
+# ============================================================================
+# Custom function to calculate p-values for all pairwise correlations
+# This allows visualization of statistical significance on correlation plots
 cor.mtest <- function(mat, ...) {
+  # Convert to matrix if needed
   mat <- as.matrix(mat)
   n <- ncol(mat)
-  p.mat<- matrix(NA, n, n)
+  
+  # Initialize p-value matrix
+  p.mat <- matrix(NA, n, n)
   diag(p.mat) <- 0
+  
+  # Calculate p-value for each pairwise correlation
   for (i in 1:(n - 1)) {
     for (j in (i + 1):n) {
       tmp <- cor.test(mat[, i], mat[, j], ...)
       p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
     }
   }
+  
+  # Assign dimension names
   colnames(p.mat) <- rownames(p.mat) <- colnames(mat)
   p.mat
 }
-# matrix of the p-value of the correlation
 
+# Define color palette for visualization (red = negative, blue = positive)
 col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
 
+# ============================================================================
+# SECTION 9: SAVE CORRELATION VISUALIZATION
+# ============================================================================
+# Create high-resolution image of correlation matrix
 tiff("phenotypic_correlations.png", width = 25, height = 25, res = 200, units = "cm")
 
 par(mfrow = c(2, 2))

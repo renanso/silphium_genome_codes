@@ -1,103 +1,147 @@
-##run on R 4.4.2
+################################################################################
+# Geographic and Climate Data Visualization for Silphium Samples
+################################################################################
+# Purpose: Visualizes sample collection locations on maps with climate data layers
+# Author: Renan Souza
+# Created: R 4.4.2
+# Output: Maps showing sample locations, hardiness zones, and climate variables
+################################################################################
+
+# Clear workspace
 rm(list=ls())
 
-library("ggplot2")
-library("ggrepel")
-library("sf")
-library("rnaturalearth")
-library("rnaturalearthdata")
-library("maps")
-library("tools")
-###USDA hardiness zones
-library("tidyverse")
-library("USAboundaries") # install v0.3.0 to work
-library("conflicted")  
+# ============================================================================
+# LOAD REQUIRED LIBRARIES
+# ============================================================================
+# Spatial and mapping visualization
+library("sf")                   # Simple features for spatial data handling
+library("rnaturalearth")        # Natural Earth map data
+library("rnaturalearthdata")    # Additional Natural Earth datasets
+library("maps")                 # Map drawing utilities
+library("ggspatial")            # Spatial extensions for ggplot2
+
+# Data manipulation and visualization
+library("ggplot2")              # Grammar of graphics for plotting
+library("ggrepel")              # Better label placement to avoid overlaps
+library("tidyverse")            # Data manipulation toolkit
+library("data.table")           # Fast data frame operations
+
+# Geographic data handling
+library("geodata")              # Download and manage geographic data
+library("terra")                # Raster and vector data manipulation
+library("raster")               # Raster data analysis
+
+# US-specific utilities
+library("USAboundaries")        # US state and county boundaries (v0.3.0 required)
+library("tools")                # Utility functions
+library("conflicted")           # Manage function name conflicts
 conflict_prefer("filter", "dplyr")
 conflict_prefer("lag", "dplyr")
-##climate data layers
-library("geodata")
-library("terra")
-library("raster") ##rasterize vapr data
-library("ggspatial")
-library("raster")
-library("data.table")
-
-##data input
-data<- read.csv("coordinates3.csv", header = T)
 
 
+# ============================================================================
+# DATA INPUT
+# ============================================================================
+# Load sample coordinates
+data <- read.csv("coordinates3.csv", header = TRUE)
+# Expected columns: clone ID, longitude (long), latitude (lat)
 
+# Set plotting theme to black and white
 theme_set(theme_bw())
+
+# ============================================================================
+# SECTION 1: BASIC WORLD MAP WITH SAMPLE LOCATIONS
+# ============================================================================
+# Download world country boundaries at medium resolution
 world <- ne_countries(scale = "medium", returnclass = "sf")
-class(world)
-      
-###rivers layer
-rivers50 <- ne_download(scale = 50, type = 'rivers_lake_centerlines', category = 'physical') #Rivers data 
+
+# Download rivers and lakes layer for geographic context
+rivers50 <- ne_download(scale = 50, type = 'rivers_lake_centerlines', 
+                        category = 'physical')
+# Crop rivers to study region (central North America)
 rivers_cropped <- st_crop(st_as_sf(rivers50), xmin = -95, xmax = -87,
                           ymin = 25, ymax = 48)
 
+
+# Map 1: World map with sample points and labels
 ggplot(data = world) +
   geom_sf() +
   geom_point(data = data, aes(x = long, y = lat), size = 2, shape = 23, fill = "darkred") +
-  geom_label_repel(aes(x = long, y = lat,label=clone),size = 3, color="black", data=data,
-                   max.overlaps = getOption("ggrepel.max.overlaps", default = 200)) +
+  # Label points with clone ID, avoiding overlaps
+  geom_label_repel(aes(x = long, y = lat, label = clone), size = 3, color = "black", 
+                   data = data, max.overlaps = 200) +
   geom_sf(data = rivers_cropped, col = 'blue') +
   coord_sf(xlim = c(-110, -70), ylim = c(20, 55), expand = FALSE)
-  
+
+# ============================================================================
+# SECTION 2: US STATE BOUNDARIES MAP
+# ============================================================================
+# Load US state boundaries for geographic reference
 states <- st_as_sf(map("state", plot = FALSE, fill = TRUE))
-head(states)
 
-#states <- cbind(states, st_coordinates(st_centroid(states)))
-
+# Convert state names to title case for consistency
 states$ID <- toTitleCase(states$ID)
-head(states)
 
+
+# Map 2: US state map with sample points
 ggplot(data = world) +
   geom_sf(data = states) +
-  geom_point(data = data, aes(x = long, y = lat), size = 1,shape = 23, fill = "darkred") +
-  #geom_label_repel(aes(x = long, y = lat,label=clone),size = 3, color="black", data=data,
-  #                 max.overlaps = getOption("ggrepel.max.overlaps", default = 200)) +
+  geom_point(data = data, aes(x = long, y = lat), size = 1, shape = 23, fill = "darkred") +
   geom_sf(data = rivers_cropped, col = 'blue') +
   coord_sf(xlim = c(-110, -70), ylim = c(20, 55), expand = FALSE)
 
-#install.packages("USAboundariesData", repos = "https://ropensci.r-universe.dev", type = "source")
-# Download and unzip file
-#temp_shapefile <- tempfile()
-#download.file('https://prism.oregonstate.edu/projects/public/phm/2012/phm_us_shp_2012.zip', temp_shapefile)
-#unzip(temp_shapefile)
-
-# Read full shapefile
+# ============================================================================
+# SECTION 3: USDA HARDINESS ZONES VISUALIZATION
+# ============================================================================
+# Load USDA Plant Hardiness Zone shapefile (pre-downloaded, 2012 edition)
+# Download source: https://prism.oregonstate.edu/projects/public/phm/2012/
 shp_hardness <- read_sf('phm_us_shp.shp')
 
-# Subset to zones 9b and higher
+# Filter to zones suitable for Silphium (9b and warmer)
+# Silphium species have high cold tolerance up to zone 3-4
 shp_hardness_subset <- shp_hardness %>%
   filter(str_detect(ZONE, '9b|10a|10b|11a|11b'))
 
-# state boundaries for context
-usa <- us_boundaries(type="state", resolution = "low") %>% 
-  filter(!state_abbr %in% c("PR", "AK", "HI"))  # lower 48 only
+# Load US state boundaries (lower 48 states only for reference)
+usa <- us_boundaries(type = "state", resolution = "low") %>% 
+  filter(!state_abbr %in% c("PR", "AK", "HI"))
 
-# Plot it
+
+# Map 3: Hardiness zone visualization with sample locations
 ggplot() +
-  geom_sf(data = shp_hardness, aes(fill = ZONE), color=NA) +
+  geom_sf(data = shp_hardness, aes(fill = ZONE), color = NA) +
   geom_sf(data = usa, color = 'black', fill = NA) +
-#  coord_sf(crs = 5070) +
-  theme_void() + # remove lat/long grid lines
-geom_point(data = data, aes(x = long, y = lat), size = 1.5, 
-           shape = 23, fill = "darkred") +
+  theme_void() +  # Remove lat/long grid lines for cleaner map
+  geom_point(data = data, aes(x = long, y = lat), size = 1.5, 
+             shape = 23, fill = "darkred") +
   coord_sf(xlim = c(-107, -70), ylim = c(20, 55), expand = FALSE)
 
+# ============================================================================
+# SECTION 4: CLIMATE DATA LAYERS FROM WORLDCLIM v2.1
+# ============================================================================
+# WorldClim is a free climate database with 10-minute resolution data
+# Reference: https://www.worldclim.org/
+# Variables obtained for the continental USA:
+#   - tavg: Average temperature (°C)
+#   - tmin: Minimum temperature (°C)
+#   - tmax: Maximum temperature (°C)
+#   - prec: Precipitation (mm)
+#   - srad: Solar radiation (kJ m-2 day-1)
+#   - elev: Elevation (m)
 
-#####climate data layers
-
-## Change the paths to where you saved the worldclim data
-#data_bio <- worldclim_country("USA", var="bio",res=10,version="2.1", path="G:/My Drive/field_trials_24/final_files/data_for_gwas/worldclim")
-data_tavg <- worldclim_country("USA", var="tavg",res=10,version="2.1", path="~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
-data_tmin <- worldclim_country("USA", var="tmin",res=10,version="2.1", path="~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
-data_tmax <- worldclim_country("USA", var="tmax",res=10,version="2.1", path="~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
-data_prec <- worldclim_country("USA", var="prec",res=10,version="2.1", path="~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
-data_srad <- worldclim_country("USA", var="srad",res=10,version="2.1", path="~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
-data_elev <- worldclim_country("USA", var="elev",res=10,version="2.1", path="~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
+# NOTE: Update paths to match your local directory where WorldClim data is stored
+data_tavg <- worldclim_country("USA", var = "tavg", res = 10, version = "2.1", 
+                               path = "~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
+data_tmin <- worldclim_country("USA", var = "tmin", res = 10, version = "2.1", 
+                               path = "~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
+data_tmax <- worldclim_country("USA", var = "tmax", res = 10, version = "2.1", 
+                               path = "~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
+data_prec <- worldclim_country("USA", var = "prec", res = 10, version = "2.1", 
+                               path = "~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
+data_srad <- worldclim_country("USA", var = "srad", res = 10, version = "2.1", 
+                               path = "~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
+data_elev <- worldclim_country("USA", var = "elev", res = 10, version = "2.1", 
+                               path = "~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim")
 
 vapr.files <- list.files("~/Library/CloudStorage/GoogleDrive-rsouza@hudsonalpha.org/My Drive/projects/007_silphium50K/genome_scans/worldclim/climate/wc2.1_30s_vapr", ".tif", full.names=TRUE)
 vapr <- stack(vapr.files)

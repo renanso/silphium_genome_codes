@@ -1,102 +1,156 @@
+################################################################################
+# Phenotypic Data Analysis and Linear Mixed Effects Modeling
+################################################################################
+# Purpose: Analyze phenotypic variation using linear mixed effects models (LMER)
+#          to partition genetic (clone) and environmental effects; calculate
+#          Best Linear Unbiased Estimates (BLUEs) for each clone
+# Input: phenotypic_data.csv - Raw phenotypic measurements from field trials
+# Output: Summary statistics, mixed effects model results, BLUE predictions
+# Traits: max_ray_floret_count, ave_sd_mass_mg, seed_number_per_head,
+#         largest_recp_diam_mm
+################################################################################
+
+# Load required library for mixed effects models
 library("lme4")
-rm(list = ls());ls ()
-data <- read.csv("phenotypic_data.csv", stringsAsFactors=FALSE, fileEncoding="latin1")
+
+# Clear workspace
+rm(list = ls())
+
+# ============================================================================
+# SECTION 1: DATA INPUT AND INITIAL INSPECTION
+# ============================================================================
+# Load raw phenotypic data from field trials
+data <- read.csv("phenotypic_data.csv", stringsAsFactors = FALSE, fileEncoding = "latin1")
+
+# Examine data structure
 head(data)
 tail(data)
 str(data)
 
-## reducing the dataset
-data2<- data[,c(1:5,7,16,17,20:23)]
+# ============================================================================
+# SECTION 2: DATA SUBSETTING AND TYPE CONVERSION
+# ============================================================================
+# Select relevant columns for analysis (first 5 plus traits of interest)
+# Reduces dimensionality while retaining key variables
+data2 <- data[, c(1:5, 7, 16, 17, 20:23)]
 
-# adjusting the factors and variables
-data2[,1:8] <- lapply(data2[,1:8], factor)
+# Convert first 8 columns to factors (experimental design variables)
+# These represent: clone, environment, replication, block, etc.
+data2[, 1:8] <- lapply(data2[, 1:8], factor)
 str(data2)
 
-data2[,9:12] <- lapply(data2[,9:12], as.numeric)
+# Convert last 4 columns to numeric (quantitative traits)
+data2[, 9:12] <- lapply(data2[, 9:12], as.numeric)
 str(data2)
 summary(data2)
 
-#saving the newest file
+# ============================================================================
+# SECTION 3: DATA PERSISTENCE
+# ============================================================================
+# Save cleaned data as R object (faster loading, preserves structure)
 saveRDS(data2, "pheno")
 
-# loading pheno
+# Load and attach phenotype data for analysis
 pheno <- readRDS("pheno")
 attach(pheno)
 str(pheno)
 
-# data visualization
-par(mar=c(1,1,1,1))
-par(mfrow=c(2,2))
-for (i in 1:length(pheno[,9:12])) {
-  boxplot(pheno[,9:12][,i], main=names(pheno[,9:12][i]), type="l")
+# ============================================================================
+# SECTION 4: EXPLORATORY DATA VISUALIZATION
+# ============================================================================
+# Boxplots for trait distributions across experimental groups
+par(mar = c(1, 1, 1, 1))
+par(mfrow = c(2, 2))
+for (i in 1:length(pheno[, 9:12])) {
+  boxplot(pheno[, 9:12][, i], main = names(pheno[, 9:12][i]), type = "l")
 }
 dev.off()
 
-## histograms
-#quantitative
-par(mar=c(1,1,1,1))
-
-par(mfrow=c(2,2))
-for (i in 1:length(pheno[,9:12])) {
-  hist(pheno[,9:12][,i], main=names(pheno[,9:12][i]))
+# Histograms for trait distributions (assess normality, identify outliers)
+par(mar = c(1, 1, 1, 1))
+par(mfrow = c(2, 2))
+for (i in 1:length(pheno[, 9:12])) {
+  hist(pheno[, 9:12][, i], main = names(pheno[, 9:12][i]))
 }
 dev.off()
 
-##saving the clean phenotypes
+# Save clean phenotypes for downstream analysis
 saveRDS(pheno, "pheno2")
 
-############################################
-#######Reading and preparing datasets#######
-############################################
-rm(list = ls());ls ()
-data<- readRDS("pheno2")
+# ============================================================================
+# SECTION 5: RELOAD DATA AND PREPARE FOR ANALYSIS
+# ============================================================================
+# Clear workspace and reload cleaned data
+rm(list = ls())
+
+# Load the clean phenotype dataset
+data <- readRDS("pheno2")
 attach(data)
 str(data)
 
+# ============================================================================
+# SECTION 6: INITIAL TRAIT ANALYSIS
+# ============================================================================
+# Visualize phenotypic variation by clone (main genetic effect)
 boxplot(data$max_ray_floret_count ~ clone)
 boxplot(data$ave_sd_mass_mg ~ clone)
 boxplot(data$seed_number_per_head ~ clone)
 boxplot(data$largest_recp_diam_mm ~ clone)
 
-#dataset filter to separate by env
-data0a<- data[data$env=="al24",1:ncol(data)]
-data0b<- data[data$env=="ks24",1:ncol(data)]
-data0c<- data[data$env=="al25",1:ncol(data)]
-data0d<- data[data$env=="ks25",1:ncol(data)]
+# ============================================================================
+# SECTION 7: SUBSETTING BY ENVIRONMENT
+# ============================================================================
+# Create separate datasets for each environment (location-year combination)
+# This allows environment-specific analysis
+data0a <- data[data$env == "al24", 1:ncol(data)]  # Alabama 2024
+data0b <- data[data$env == "ks24", 1:ncol(data)]  # Kansas 2024
+data0c <- data[data$env == "al25", 1:ncol(data)]  # Alabama 2025
+data0d <- data[data$env == "ks25", 1:ncol(data)]  # Kansas 2025
 
-#including a G x E interaction factor for the combined analysis
-data$ge<-as.factor(paste0(data$env,data$clone))
+# Create genotype-by-environment factor for combined analysis
+# This allows modeling of GxE interactions
+data$ge <- as.factor(paste0(data$env, data$clone))
 str(data)
 
-##################
-### Data summaries
-##################
-summary_all<-data.frame(summary(data[9:12], maxsum = 12))
+# ============================================================================
+# SECTION 8: DESCRIPTIVE STATISTICS
+# ============================================================================
+# Generate summary statistics for all traits across genotypes
+summary_all <- data.frame(summary(data[9:12], maxsum = 12))
 write.csv(summary_all, file = "all_traits_summary.csv")
 
-###########################
-###Linear models and BLUES
-###########################
+# ============================================================================
+# SECTION 9: LINEAR MIXED EFFECTS MODELS
+# ============================================================================
+# Fit mixed effects models for combined analysis (all environments)
+# Model structure: Trait ~ Fixed effects (clone) + Random effects (env, rep, block, GxE)
 
-######All environments analysis (combined)
-fm_test1.1<-lmer(max_ray_floret_count~ clone + (1|env/rep) + (1|rep/block) + (1|ge), data=data)
-coef(fm_test1.1)[[2]] #random effect of clone (Intercept + BLUP)
-ranef(fm_test1.1)
-fix<-fixef(fm_test1.1)
-summary(fm_test1.1)
-coef(summary(fm_test1.1)) #fixed effect
+# Model 1: Ray Floret Count
+# Random effects account for variation due to location, replication, and GxE
+fm_test1.1 <- lmer(max_ray_floret_count ~ clone + (1|env/rep) + (1|rep/block) + (1|ge), 
+                    data = data)
+# Extract BLUEs (conditional means) for each clone
+coef(fm_test1.1)[[2]]          # Random effect of clone (Intercept + BLUP)
+ranef(fm_test1.1)              # Random effects summary
+fix <- fixef(fm_test1.1)        # Fixed effects estimates
+summary(fm_test1.1)             # Full model summary
+coef(summary(fm_test1.1))       # Fixed effect coefficient table
 
-fm_test1.2<-lmer(ave_sd_mass_mg~ clone + (1|env/rep) + (1|rep/block) + (1|ge), data=data)
-coef(fm_test1.2)[[2]] #random effect of clone (Intercept + BLUP)
+# Model 2: Seed Mass (mg)
+fm_test1.2 <- lmer(ave_sd_mass_mg ~ clone + (1|env/rep) + (1|rep/block) + (1|ge), 
+                    data = data)
+coef(fm_test1.2)[[2]]
 ranef(fm_test1.2)
-fix<-fixef(fm_test1.2)
+fix <- fixef(fm_test1.2)
 summary(fm_test1.2)
-coef(summary(fm_test1.2)) #fixed effect
+coef(summary(fm_test1.2))
 
-fm_test1.3<-lmer(seed_number_per_head~ clone + (1|env/rep) + (1|rep/block) + (1|ge), data=data)
-coef(fm_test1.3)[[2]] #random effect of clone (Intercept + BLUP)
+# Model 3: Seed Number per Head
+fm_test1.3 <- lmer(seed_number_per_head ~ clone + (1|env/rep) + (1|rep/block) + (1|ge), 
+                    data = data)
+coef(fm_test1.3)[[2]]
 ranef(fm_test1.3)
-fix<-fixef(fm_test1.3)
+fix <- fixef(fm_test1.3)
 summary(fm_test1.3)
 coef(summary(fm_test1.3)) #fixed effect
 
