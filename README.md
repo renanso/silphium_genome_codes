@@ -54,7 +54,7 @@ All code for data analysis and figure generation is organized in the folders des
 
 ---
 
-### `genome_scans/` — Genome-Wide Association Study (GWAS)
+### `genome_scans/` — Genome-Wide Association Study (GWAS) and Genome-environment analysis (GEA)
 **Purpose**: Identify SNPs significantly associated with quantitative traits
 
 **Main Script**: `gwas_gapit.R`
