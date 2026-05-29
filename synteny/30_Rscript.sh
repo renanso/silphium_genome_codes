@@ -11,6 +11,8 @@
 #SBATCH --error=%x_%j.err		# Standard error log
 #SBATCH --partition=normal
 
+#This is SLURM script to run genespace as a job in the cluster.
+
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
 eval "$(conda shell.bash hook)"
