@@ -1,9 +1,9 @@
 ################################################################################
 # Phenotypic Data Analysis and Linear Mixed Effects Modeling
 ################################################################################
-# Purpose: Analyze phenotypic variation using linear mixed effects models (LMER)
-#          to partition genetic (clone) and environmental effects; calculate
-#          Best Linear Unbiased Estimates (BLUEs) for each clone
+# Purpose: Analyze phenotypic variation using mixed effects models
+#          to partition genetic and environmental effects; calculate
+#          Best Linear Unbiased Estimates (BLUEs) for each genet
 # Input: phenotypic_data.csv - Raw phenotypic measurements from field trials
 # Output: Summary statistics, mixed effects model results, BLUE predictions
 # Traits: max_ray_floret_count, ave_sd_mass_mg, seed_number_per_head,
