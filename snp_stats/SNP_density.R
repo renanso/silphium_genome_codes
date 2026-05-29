@@ -1,12 +1,9 @@
 ################################################################################
-# Manhattan Plot and SNP Density Visualization for GWAS Results
+# Plot SNP Density
 ################################################################################
-# Purpose: Create Manhattan plots showing genome-wide association scan results
-#          with threshold lines for significant associations; highlights SNPs
-#          associated with quantitative traits
-# Input: snp_data_449K.txt - GWAS results with LOD scores per SNP
-# Output: Manhattan plot visualization highlighting significant associations
-#         at custom thresholds (CMplot PNG output)
+# Purpose: Create a SNP density plot
+# Input: snp_data_449K.txt - SNP positions
+# Output: Plot visualizing SNP densities across the chromosomes.
 # Reference: CMplot package for publication-quality Manhattan plots
 ################################################################################
 
