@@ -9,9 +9,13 @@
 #SBATCH --error=%x_%j.err		# Standard error log
 #SBATCH --partition=normal
 
+##This is a SLURM job script to run Homer to analyze contact probability between pairs of Illumina data generated from Hi-C libraries.
+#Load modules from cluster
+
 ml cluster/bowtie/2.3.5.1
 ml samtools/1.19.2-gcc-13.1.0
 
+#Running conda environment withing the HPC
 eval "$(conda shell.bash hook)"
 conda activate base
 
