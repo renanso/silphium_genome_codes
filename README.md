@@ -87,6 +87,11 @@ The scripts generate correlation matrices, G X E interaction plots and variance 
 
 ---
 
+### `SLURM_scripts/` — SLURM job scripts
+**Purpose**: This folder contains several helper scripts to perform QC and analyze sequencing data. These are all shell scripts to run in a HPC.
+
+---
+
 ## Data Availability
 
 Genomic data (reads, assemblies) for this research is available in the following NCBI bioprojects:
