@@ -29,7 +29,7 @@ All code for data analysis and figure generation is organized in the folders des
 ---
 
 ### `gene_families/` — Gene Family Abundance Analysis
-**Purpose**: Compare gene family copy numbers across plant genomes. The main script here is `gene_families_plot.R`, which analyzes abundance of selected gene families across 5 plant genomes (2 Silphium spp., 2 Helianthus spp., S. taccada)
+**Purpose**: Compare gene family copy numbers across plant genomes. The main script here is `gene_families_plot.R`, which analyzes abundance of selected gene families across 5 plant genomes (2 Silphium spp., 2 Helianthus spp., S. taccada).
 
 ---
 
@@ -40,8 +40,8 @@ All code for data analysis and figure generation is organized in the folders des
 
 ### `heritability_correlations/` — Phenotypic Analysis and G×E Interactions
 **Purpose**: Quantify trait heritability and genotype-by-environment interactions. The main scripts are:
-`cor_var_her.R`: Phenotypic correlation and variance component analysis
-`gxe.R`: Genotype-by-environment interaction visualization
+`cor_var_her.R`: Phenotypic correlation and variance component analysis.
+`gxe.R`: Genotype-by-environment interaction visualization.
 
 The scripts generate correlation matrices, G X E interaction plots and variance components table.
 
