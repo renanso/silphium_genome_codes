@@ -1,5 +1,5 @@
 ################################################################################
-# Gene Family Abundance Visualization Across Multiple Genomes
+# Gene Family Visualization Across Multiple Genomes
 ################################################################################
 # Purpose: Creates bubble plot showing counts of selected gene families across
 #          five plant species (2 Silphium spp., 2 Helianthus spp., S. taccada)
