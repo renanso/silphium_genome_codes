@@ -9,6 +9,16 @@
 #SBATCH --error=%x_%j.err		# Standard error log
 #SBATCH --partition=normal
 
+
+# Script to convert a GFA-formatted assembly (graph) to a FASTA file
+# by extracting sequence records (lines starting with 'S') and
+# printing them in FASTA format. Typically used after running
+# hifiasm/assembly to produce fasta contigs from the GFA output.
+#
+# Usage: Update the working directory and GFA filename in the `awk`
+# command, then submit with `sbatch gfa_to_fa.sh` or run locally.
+
+
 #module load cluster/hifiasm/0.19.8
 
 #data input

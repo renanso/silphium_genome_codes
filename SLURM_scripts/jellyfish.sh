@@ -10,6 +10,17 @@
 #SBATCH --error=%x_%j.err		# Standard error log
 #SBATCH --partition=highmem
 
+
+# Purpose: Run Jellyfish k-mer counting and produce a k-mer histogram
+# for downstream analyses (e.g., genome size estimation, heterozygosity
+# assessment). Adjust `-m` (k-mer size), `-s` (hash size) and thread
+# counts to fit your data and memory limits.
+# Usage: Update `jellyfish` binary path and `reads` location, then
+# submit with `sbatch jellyfish.sh`. The script runs `jellyfish histo`
+# to output a histogram file for plotting or further processing.
+
+
+
 jellyfish="/cluster/home/rsouza/apps/jellyfish/jellyfish-2.3.1/bin/jellyfish"
 reads="/cluster/home/rsouza/silphium/illumina_parents"
 

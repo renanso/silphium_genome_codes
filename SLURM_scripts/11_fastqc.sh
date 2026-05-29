@@ -13,6 +13,17 @@
 #SBATCH --partition=plant
 #SBATCH --array 1-540 #count files with specific names for the array number: ls -lR ./*fq.gz | wc -l
  
+# Run FastQC on sequencing FASTQ files to perform per-sample
+# quality control and produce per-file HTML reports. Intended to be
+# submitted as a SLURM array job where each task processes one file.
+#
+# Usage: Edit `INPUT` and `OUTPUT` directories below, then submit with
+# `sbatch 11_fastqc.sh`. This script activates a `fastqc` conda env.
+# Notes: MultiQC can be run afterwards to aggregate reports.
+
+
+
+
 #ml /cluster/home/rsouza/FastQC/fastqc		# Load software module
 #ml cluster/multiqc/1.17 
 

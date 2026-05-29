@@ -9,6 +9,15 @@
 #SBATCH --error=%x_%j.err		# Standard error log
 #SBATCH --partition=normal
 
+# Purpose: Run the Smudgeplot workflow to infer ploidy from k-mer pair
+# data. This script builds a k-mer database with FastK, finds hetmer
+# pairs and generates smudgeplot PDFs and summary files.
+# Usage: Submit via `sbatch smudgeplot.sh`. Edit `path1` and `path2`
+# variables below to point to input FASTQ(s) and an output directory.
+# Dependencies: FastK, smudgeplot (conda env 'smudgeplot'), Python, SLURM.
+# Notes: Adjust k-mer and hetmer parameters (k, -L, -t) as needed.
+
+
 export TMPDIR=$JOB_TMP_DIR
 
 eval "$(conda shell.bash hook)"

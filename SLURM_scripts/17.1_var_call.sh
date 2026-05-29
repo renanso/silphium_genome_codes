@@ -11,6 +11,17 @@
 #SBATCH --partition=plant
 #SBATCH --array 1-270 #count files with specific names for the array number: ls -lR ./*bam | wc -l
 
+
+# Script to call variants from BAM files using `bcftools mpileup` and
+# `bcftools call`. Intended to run as a SLURM array where each task
+# processes one BAM file and produces a sorted/indexed BCF.
+#
+# Usage: Set the `REF` variable to the correct reference FASTA and
+# run `sbatch 17.1_var_call.sh`. Adjust annotations/filters as needed.
+# Dependencies: bcftools, SLURM.
+
+
+
 # Load software modules 
 
 ml bcftools/1.19-gcc-13.1.0

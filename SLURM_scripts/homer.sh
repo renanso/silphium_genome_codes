@@ -9,7 +9,19 @@
 #SBATCH --error=%x_%j.err		# Standard error log
 #SBATCH --partition=normal
 
-##This is a SLURM job script to run Homer to analyze contact probability between pairs of Illumina data generated from Hi-C libraries.
+# This script creates HOMER tag directories from alignment BAMs (or can be
+# adapted to run mapping first). It is intended to be submitted as a
+# SLURM job on the cluster to prepare inputs for downstream contact
+# probability / TAD analyses.
+#
+# Usage: Edit `REF`, `R1`, `R2`, and `outputdir` variables as needed,
+# ensure required modules/conda env are available, then submit with
+# `sbatch homer.sh`. Adjust or uncomment bowtie2 lines to perform
+# alignment within this script; by default it assumes BAMs are present.
+# Dependencies: bowtie2, samtools, HOMER (`makeTagDirectory`), SLURM.
+
+
+
 #Load modules from cluster
 
 ml cluster/bowtie/2.3.5.1

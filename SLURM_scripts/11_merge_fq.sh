@@ -10,6 +10,16 @@
 #SBATCH --error=%x_%j.err		# Standard error log
 #SBATCH --partition=plant
 
+# Script to merge paired or related FASTQ files from two directories into
+# a single combined directory. Useful when combining reads from
+# different sequencing runs or sample sets prior to downstream QC or
+# alignment.
+#
+# Usage: Edit `file1`, `file2`, and `combined` paths below, then submit
+# with `sbatch 11_merge_fq.sh`. The script concatenates files with the
+# same filenames from both sources.
+
+
 file1=/cluster/lab/clevenger/RSouza/007_silphium50k/fastqs/stax/raw_data/og_name
 file2=/cluster/lab/clevenger/RSouza/011_flexprep_silphium/updated_name/fastqs
 combined=/cluster/lab/clevenger/RSouza/011_flexprep_silphium/updated_name/phylogeny

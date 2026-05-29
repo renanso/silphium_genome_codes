@@ -9,6 +9,16 @@
 #SBATCH --error=%x_%j.err		# Standard error log
 #SBATCH --partition=normal
 
+
+# Purpose: Run OATK (Organellar Annotation Toolkit) to annotate
+# organellar sequences in a genome assembly. The command below runs
+# nhmmscan-based annotation using provided HMM databases.
+# Usage: Activate the `oatk` conda env (done in script) and adjust the
+# input fasta path and output name. Submit with `sbatch oatk.sh`.
+# Dependencies: OATK, nhmmer/nhmmscan binaries and HMM databases.
+
+
+
 #conda
 eval "$(conda shell.bash hook)"
 conda activate oatk

@@ -11,6 +11,16 @@
 #SBATCH --partition=normal
 #SBATCH --array 1-270  #count files with specific names for the array number: ls -lR ./*_R1.fq.gz | wc -l
 
+
+# Script to map paired-end reads to a reference genome using BWA MEM,
+# convert to BAM, sort and index with samtools. Designed to run as a
+# SLURM array where each task maps one sample (paired R1/R2 files).
+# Usage: Set `REF` and BED files as needed, run with `sbatch
+# 12.3_align_bwa.sh`. The script expects R1/R2 files in the working
+# directory and uses `SLURM_ARRAY_TASK_ID` to select the sample.
+# Dependencies: BWA, samtools; the script loads modules via `ml`.
+
+
 # Load software modules 
 
 ml cluster/bwa/0.7.17
