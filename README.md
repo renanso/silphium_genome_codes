@@ -45,17 +45,8 @@ All code for data analysis and figure generation is organized in the folders des
 
 ---
 
-### `gea_data/` — Geographic and Climate Data Visualization
-**Purpose**: Visualize sample collection locations and environmental context. The main script in this directory is `climate_data.R`, which integrates geographic coordinates with WorldClim v2.1 climate variables. In addition to obtaining the data from WorldClim, the script generates maps showing Silphium sample collection sites and maps with index layers (Aridity and Heat).
-
----
-
-
-
----
-
-### `genome_scans/` — Genome-Wide Association Study (GWAS) and Genome-environment analysis (GEA)
-**Purpose**: Identify SNPs significantly associated with capitulum traits and environmental indexes. The script to run this analysis is `gwas_gapit.R` and it uses the R package GAPIT3. The input data are: 449K SNPs genotyped across 258 Silphium samples and the phenotypes: RFC (Ray Floret Count), SM (Seed Mass), SNC (Seed Number per Capitulum), RD (Receptacle Diameter), AI (Aridity Index) and HI (Heat Index). Two models were used: FarmCPU and BLINK.
+### `phenotypes/` — Mixed Effects Phenotypic Modeling
+**Purpose**: Data QC, BLUEs calculation and partition phenotypic variance. The main script is `phenos_analysis.R` and it performs data cleaning, exploratory visualization and calculation of Best Linear Unbiased Estimates (BLUEs). 
 
 ---
 
@@ -63,7 +54,6 @@ All code for data analysis and figure generation is organized in the folders des
 **Purpose**: Quantify trait heritability and genotype-by-environment interactions. The main scripts are:
 `cor_var_her.R`: Phenotypic correlation and variance component analysis.
 `gxe.R`: Genotype-by-environment interaction visualization.
-
 The scripts generate correlation matrices, G X E interaction plots and variance components table.
 
 ---
@@ -78,12 +68,7 @@ The scripts generate correlation matrices, G X E interaction plots and variance 
 
 ---
 
-### `phenotypes/` — Mixed Effects Phenotypic Modeling
-**Purpose**: Data QC, BLUEs calculation and partition phenotypic variance. The main script is `phenos_analysis.R` and it performs data cleaning, exploratory visualization and calculation of Best Linear Unbiased Estimates (BLUEs). 
-
----
-
-### `snp_stats/` — SNP Statistics and Genetic Diversity
+### `snp_stats/` — SNP Statistics, linkage and heterozygosity
 **Purpose**: Analyze SNP patterns, linkage disequilibrium, and heterozygosity. The scripts in this directory are: 
 - `alleles_ld.R`: Linkage disequilibrium between candidate SNPs.
 - `heterozygosity1.R`: SNP heterozygosity estimation.
@@ -91,9 +76,8 @@ The scripts generate correlation matrices, G X E interaction plots and variance 
 
 ---
 
-
----
-
+### `gea_data/` — Geographic and Climate Data Visualization
+**Purpose**: Visualize sample collection locations and environmental context. The main script in this directory is `climate_data.R`, which integrates geographic coordinates with WorldClim v2.1 climate variables. In addition to obtaining the data from WorldClim, the script generates maps showing Silphium sample collection sites and maps with index layers (Aridity and Heat).
 
 ---
 
@@ -102,7 +86,8 @@ The scripts generate correlation matrices, G X E interaction plots and variance 
 
 ---
 
-
+### `genome_scans/` — Genome-Wide Association Study (GWAS) and Genome-environment analysis (GEA)
+**Purpose**: Identify SNPs significantly associated with capitulum traits and environmental indexes. The script to run this analysis is `gwas_gapit.R` and it uses the R package GAPIT3. The input data are: 449K SNPs genotyped across 258 Silphium samples and the phenotypes: RFC (Ray Floret Count), SM (Seed Mass), SNC (Seed Number per Capitulum), RD (Receptacle Diameter), AI (Aridity Index) and HI (Heat Index). Two models were used: FarmCPU and BLINK.
 
 ---
 
