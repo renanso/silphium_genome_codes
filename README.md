@@ -33,12 +33,12 @@ All code for data analysis and figure generation is organized in the folders des
 
 ---
 
-### `03_gene_families/` — Gene Family Abundance Analysis
+### `03_gene_families/` — Gene Family Abundance
 **Purpose**: Compare gene family copy numbers across plant genomes. The main script here is `gene_families_plot.R`, which analyzes abundance of selected gene families across 5 plant genomes (2 Silphium spp., 2 Helianthus spp., S. taccada).
 
 ---
 
-### `04_synteny/` — Comparative Genomics and Synteny Analysis
+### `04_synteny/` — Comparative Genomics and Synteny
 **Purpose**: Comparative genomics across studied species. The scripts here are built around the Genespace R package:
 - `riparian_test.R`: GENESPACE pipeline for synteny identification. 
 - `genespace_viz_test_cluster_2.R`: Genomic feature classification and visualization (genes, TIRs, Helitrons, LTRs). 
