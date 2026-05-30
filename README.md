@@ -23,13 +23,34 @@ All code for data analysis and figure generation is organized in the folders des
 
 ## Directory Structure
 
-### `gea_data/` — Geographic and Climate Data Visualization
-**Purpose**: Visualize sample collection locations and environmental context. The main script in this directory is `climate_data.R`, which integrates geographic coordinates with WorldClim v2.1 climate variables. In addition to obtaining the data from WorldClim, the script generates maps showing Silphium sample collection sites and maps with index layers (Aridity and Heat).
+### `SLURM_scripts/` — SLURM job scripts
+**Purpose**: This folder contains several helper scripts to perform QC and analyze sequencing data. These are all shell scripts to run in a HPC.
+
+---
+
+### `te_families/` — Transposable Element Analysis
+**Purpose**: Characterize TE abundance and distribution across genomes. The script `plot_te.R` compares TE content across the 5 plant genomes using EDTA pipeline results. 
 
 ---
 
 ### `gene_families/` — Gene Family Abundance Analysis
 **Purpose**: Compare gene family copy numbers across plant genomes. The main script here is `gene_families_plot.R`, which analyzes abundance of selected gene families across 5 plant genomes (2 Silphium spp., 2 Helianthus spp., S. taccada).
+
+---
+
+### `synteny/` — Comparative Genomics and Synteny Analysis
+**Purpose**: Comparative genomics across studied species. The scripts here are built around the Genespace R package:
+- `riparian_test.R`: GENESPACE pipeline for synteny identification. 
+- `genespace_viz_test_cluster_2.R`: Genomic feature classification and visualization (genes, TIRs, Helitrons, LTRs). 
+
+---
+
+### `gea_data/` — Geographic and Climate Data Visualization
+**Purpose**: Visualize sample collection locations and environmental context. The main script in this directory is `climate_data.R`, which integrates geographic coordinates with WorldClim v2.1 climate variables. In addition to obtaining the data from WorldClim, the script generates maps showing Silphium sample collection sites and maps with index layers (Aridity and Heat).
+
+---
+
+
 
 ---
 
@@ -70,15 +91,9 @@ The scripts generate correlation matrices, G X E interaction plots and variance 
 
 ---
 
-### `synteny/` — Comparative Genomics and Synteny Analysis
-**Purpose**: Comparative genomics across studied species. The scripts here are built around the Genespace R package:
-- `riparian_test.R`: GENESPACE pipeline for synteny identification. 
-- `genespace_viz_test_cluster_2.R`: Genomic feature classification and visualization (genes, TIRs, Helitrons, LTRs). 
 
 ---
 
-### `te_families/` — Transposable Element Analysis
-**Purpose**: Characterize TE abundance and distribution across genomes. The script `plot_te.R` compares TE content across the 5 plant genomes using EDTA pipeline results. 
 
 ---
 
@@ -87,8 +102,7 @@ The scripts generate correlation matrices, G X E interaction plots and variance 
 
 ---
 
-### `SLURM_scripts/` — SLURM job scripts
-**Purpose**: This folder contains several helper scripts to perform QC and analyze sequencing data. These are all shell scripts to run in a HPC.
+
 
 ---
 
