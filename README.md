@@ -45,12 +45,12 @@ All code for data analysis and figure generation is organized in the folders des
 
 ---
 
-### `05_phenotypes/` — Mixed Effects Phenotypic Modeling
+### `05_phenotypes/` — Best Linear Unbiased Estimates
 **Purpose**: Data QC, BLUEs calculation and partition phenotypic variance. The main script is `phenos_analysis.R` and it performs data cleaning, exploratory visualization and calculation of Best Linear Unbiased Estimates (BLUEs). 
 
 ---
 
-### `06_heritability_correlations/` — Phenotypic Analysis and G×E Interactions
+### `06_heritability_correlations/` — Correlations, variance, heritability and G×E
 **Purpose**: Quantify trait heritability and genotype-by-environment interactions. The main scripts are:
 `cor_var_her.R`: Phenotypic correlation and variance component analysis.
 `gxe.R`: Genotype-by-environment interaction visualization.
