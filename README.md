@@ -91,6 +91,12 @@ The scripts generate correlation matrices, G X E interaction plots and variance 
 
 ---
 
+### `13_sensitivity_scans/` — Genome scans in different population subgroups.
+**Purpose**: Understand the effect of population subgroups on the marker-phenotype associations. The analysis was performed by rerunning the genome scans in subsets of the SAP: S. integrifolium individuals only (N=236), wild individuals only (N=206), and breeding individuals only (N=47). To run the analysis, the script 12_genome_scans/gwas_gapit.R was used with the same parameters, but the input hapmap was filtered to contain the targeted populations. The resulting csv files are used for visualization with the script boxplot_analysis_v3.R.
+
+---
+
+
 ## Data Availability
 
 Genomic data (reads, assemblies) for this research is available in the following NCBI bioprojects:
