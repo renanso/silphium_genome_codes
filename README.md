@@ -113,3 +113,7 @@ Processed data files needed to run the scripts are included in each folder.
 ## Contact
 
 For questions about these analyses, please contact Renan Souza at rsouza@hudsonalpha.org.
+
+## Reference for this repository
+
+[![DOI](https://zenodo.org/badge/1146878646.svg)](https://doi.org/10.5281/zenodo.20562548)
